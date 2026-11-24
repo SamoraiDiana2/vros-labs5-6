@@ -1,0 +1,38 @@
+{
+  "variant": 22,
+  "structure": "С2",
+  "ok": true,
+  "static": {
+    "class": "ResultCacheHashTable",
+    "checked": [
+      "get",
+      "contains",
+      "size",
+      "_validate_key",
+      "_bucket_index"
+    ],
+    "findings": [],
+    "ok": true
+  },
+  "dynamic_single": {
+    "ops": 200000,
+    "size": 5001,
+    "unchanged": true,
+    "invariants_ok": true
+  },
+  "dynamic_threads": {
+    "threads": 6,
+    "ops": 1442772,
+    "ops_per_thread": [
+      238579,
+      215594,
+      277247,
+      260863,
+      232743,
+      217746
+    ],
+    "size": 5001,
+    "unchanged": true,
+    "invariants_ok": true
+  }
+}

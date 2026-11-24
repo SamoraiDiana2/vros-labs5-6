@@ -1,0 +1,116 @@
+[
+  {
+    "mode": "cs",
+    "lock": "global",
+    "n": 12,
+    "n_w": 6,
+    "n_r": 6,
+    "buckets": 1024,
+    "key_range": [
+      0,
+      10000
+    ],
+    "samples_w": 3363264,
+    "samples_r": 3363264,
+    "t_cs_w_us": 0.8026264958802798,
+    "t_cs_r_us": 0.744308284754529,
+    "t_cs_bar_us": 0.7734673903174044,
+    "x_limit": 1292879.3282282196,
+    "invariants": {
+      "ok": true,
+      "size": 10001,
+      "max_size": 10001,
+      "num_buckets": 1024,
+      "non_empty_buckets": 1024,
+      "max_chain_len": 11,
+      "inserted": 10001,
+      "updated": 3677197,
+      "removed": 0,
+      "remove_misses": 0,
+      "distinct_written_keys": 10001,
+      "key_range": "0..10000"
+    },
+    "host": {
+      "python": "3.14.2",
+      "implementation": "CPython",
+      "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+      "logical_cores": 2
+    }
+  },
+  {
+    "mode": "cs",
+    "lock": "global",
+    "n": 12,
+    "n_w": 6,
+    "n_r": 6,
+    "buckets": 1024,
+    "key_range": [
+      0,
+      10000
+    ],
+    "samples_w": 3392424,
+    "samples_r": 3392424,
+    "t_cs_w_us": 0.7645939584947982,
+    "t_cs_r_us": 0.7159750485443742,
+    "t_cs_bar_us": 0.7402845035195862,
+    "x_limit": 1350832.0047841477,
+    "invariants": {
+      "ok": true,
+      "size": 10001,
+      "max_size": 10001,
+      "num_buckets": 1024,
+      "non_empty_buckets": 1024,
+      "max_chain_len": 11,
+      "inserted": 10001,
+      "updated": 3770191,
+      "removed": 0,
+      "remove_misses": 0,
+      "distinct_written_keys": 10001,
+      "key_range": "0..10000"
+    },
+    "host": {
+      "python": "3.14.2",
+      "implementation": "CPython",
+      "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+      "logical_cores": 2
+    }
+  },
+  {
+    "mode": "cs",
+    "lock": "global",
+    "n": 12,
+    "n_w": 6,
+    "n_r": 6,
+    "buckets": 1024,
+    "key_range": [
+      0,
+      10000
+    ],
+    "samples_w": 3419832,
+    "samples_r": 3419832,
+    "t_cs_w_us": 0.7573196264810804,
+    "t_cs_r_us": 0.7047165472074897,
+    "t_cs_bar_us": 0.7310180868442852,
+    "x_limit": 1367955.2093120932,
+    "invariants": {
+      "ok": true,
+      "size": 10001,
+      "max_size": 10001,
+      "num_buckets": 1024,
+      "non_empty_buckets": 1024,
+      "max_chain_len": 11,
+      "inserted": 10001,
+      "updated": 3794839,
+      "removed": 0,
+      "remove_misses": 0,
+      "distinct_written_keys": 10001,
+      "key_range": "0..10000"
+    },
+    "host": {
+      "python": "3.14.2",
+      "implementation": "CPython",
+      "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+      "logical_cores": 2
+    }
+  }
+]

@@ -1,0 +1,464 @@
+[
+  {
+    "mode": "threads",
+    "lock": "rw-writer",
+    "n": 12,
+    "n_w": 6,
+    "n_r": 6,
+    "buckets": 1024,
+    "key_range": [
+      0,
+      10000
+    ],
+    "warmup_s": 1.0,
+    "duration_s": 10.001925045999997,
+    "seed": 190519,
+    "write": {
+      "threads": 6,
+      "ops": 3800785,
+      "ops_per_thread": [
+        586508,
+        709314,
+        562987,
+        606064,
+        648172,
+        687740
+      ],
+      "X": 380005.3472226352,
+      "x_per_thread": 63334.22453710586,
+      "p50_us": 1.720000000204891,
+      "p99_us": 3.6419999105419265,
+      "h": 2.117441808202373,
+      "wait_sum_s": 46.045999256837604,
+      "wait_max_ms": 423.64799899996797,
+      "w": 0.7672856149369045,
+      "mu": 633464.1666666666,
+      "sigma": 52974.93968037046,
+      "cv": 0.08362736594735634
+    },
+    "read": {
+      "threads": 6,
+      "ops": 1956,
+      "ops_per_thread": [
+        1956,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "X": 195.56235334739387,
+      "x_per_thread": 32.59372555789898,
+      "p50_us": 1.6689999711161363,
+      "p99_us": 3.2990000136123854,
+      "h": 1.9766327565639163,
+      "wait_sum_s": 2.700309246000984,
+      "wait_max_ms": 2699.3264029999864,
+      "w": 0.0449964920683094,
+      "mu": 326.0,
+      "sigma": 728.9581606649315,
+      "cv": 2.23606797749979
+    },
+    "total": {
+      "ops": 3802741,
+      "X": 380200.90957598254,
+      "phi_w": 0.9994856341780837,
+      "phi_r": 0.0005143658219163494,
+      "p50_us": 1.720000000204891,
+      "p99_us": 3.6419999105419265,
+      "wait_max_ms": 2699.3264029999864,
+      "w": 0.40614105350260693,
+      "cv": 1.0059418115129888
+    },
+    "invariants": {
+      "ok": true,
+      "size": 10001,
+      "max_size": 10001,
+      "num_buckets": 1024,
+      "non_empty_buckets": 1024,
+      "max_chain_len": 11,
+      "inserted": 10001,
+      "updated": 4251776,
+      "removed": 0,
+      "remove_misses": 0,
+      "distinct_written_keys": 10001,
+      "key_range": "0..10000"
+    },
+    "per_thread": [
+      {
+        "thread": 1,
+        "role": "write",
+        "ops": 586508
+      },
+      {
+        "thread": 2,
+        "role": "read",
+        "ops": 1956
+      },
+      {
+        "thread": 3,
+        "role": "write",
+        "ops": 709314
+      },
+      {
+        "thread": 4,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 5,
+        "role": "write",
+        "ops": 562987
+      },
+      {
+        "thread": 6,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 7,
+        "role": "write",
+        "ops": 606064
+      },
+      {
+        "thread": 8,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 9,
+        "role": "write",
+        "ops": 648172
+      },
+      {
+        "thread": 10,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 11,
+        "role": "write",
+        "ops": 687740
+      },
+      {
+        "thread": 12,
+        "role": "read",
+        "ops": 0
+      }
+    ],
+    "host": {
+      "python": "3.14.2",
+      "implementation": "CPython",
+      "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+      "logical_cores": 2
+    }
+  },
+  {
+    "mode": "threads",
+    "lock": "rw-writer",
+    "n": 12,
+    "n_w": 6,
+    "n_r": 6,
+    "buckets": 1024,
+    "key_range": [
+      0,
+      10000
+    ],
+    "warmup_s": 1.0,
+    "duration_s": 10.040089453000064,
+    "seed": 190519,
+    "write": {
+      "threads": 6,
+      "ops": 3813018,
+      "ops_per_thread": [
+        639396,
+        581889,
+        664752,
+        656982,
+        499562,
+        770437
+      ],
+      "X": 379779.2856178824,
+      "x_per_thread": 63296.5476029804,
+      "p50_us": 1.7290000187131227,
+      "p99_us": 3.6249999766369,
+      "h": 2.0965875866993633,
+      "wait_sum_s": 46.25494229391643,
+      "wait_max_ms": 355.5321339999864,
+      "w": 0.7678374864162699,
+      "mu": 635503.0,
+      "sigma": 82556.65501540947,
+      "cv": 0.12990757717179852
+    },
+    "read": {
+      "threads": 6,
+      "ops": 1915,
+      "ops_per_thread": [
+        0,
+        1915,
+        0,
+        0,
+        0,
+        0
+      ],
+      "X": 190.73535240542918,
+      "x_per_thread": 31.789225400904865,
+      "p50_us": 1.677999989624368,
+      "p99_us": 3.540999955475854,
+      "h": 2.1102502844881017,
+      "wait_sum_s": 9.253195976999336,
+      "wait_max_ms": 9252.389528000094,
+      "w": 0.15360414234547154,
+      "mu": 319.1666666666667,
+      "sigma": 713.6783628186828,
+      "cv": 2.2360679774997894
+    },
+    "total": {
+      "ops": 3814933,
+      "X": 379970.02097028785,
+      "phi_w": 0.9994980252602076,
+      "phi_r": 0.0005019747397922846,
+      "p50_us": 1.7290000187131227,
+      "p99_us": 3.6249999766369,
+      "wait_max_ms": 9252.389528000094,
+      "w": 0.4607208143808707,
+      "cv": 1.0157330895466432
+    },
+    "invariants": {
+      "ok": true,
+      "size": 10001,
+      "max_size": 10001,
+      "num_buckets": 1024,
+      "non_empty_buckets": 1024,
+      "max_chain_len": 11,
+      "inserted": 10001,
+      "updated": 4259569,
+      "removed": 0,
+      "remove_misses": 0,
+      "distinct_written_keys": 10001,
+      "key_range": "0..10000"
+    },
+    "per_thread": [
+      {
+        "thread": 1,
+        "role": "write",
+        "ops": 639396
+      },
+      {
+        "thread": 2,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 3,
+        "role": "write",
+        "ops": 581889
+      },
+      {
+        "thread": 4,
+        "role": "read",
+        "ops": 1915
+      },
+      {
+        "thread": 5,
+        "role": "write",
+        "ops": 664752
+      },
+      {
+        "thread": 6,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 7,
+        "role": "write",
+        "ops": 656982
+      },
+      {
+        "thread": 8,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 9,
+        "role": "write",
+        "ops": 499562
+      },
+      {
+        "thread": 10,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 11,
+        "role": "write",
+        "ops": 770437
+      },
+      {
+        "thread": 12,
+        "role": "read",
+        "ops": 0
+      }
+    ],
+    "host": {
+      "python": "3.14.2",
+      "implementation": "CPython",
+      "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+      "logical_cores": 2
+    }
+  },
+  {
+    "mode": "threads",
+    "lock": "rw-writer",
+    "n": 12,
+    "n_w": 6,
+    "n_r": 6,
+    "buckets": 1024,
+    "key_range": [
+      0,
+      10000
+    ],
+    "warmup_s": 1.0,
+    "duration_s": 10.009350642999948,
+    "seed": 190519,
+    "write": {
+      "threads": 6,
+      "ops": 3794161,
+      "ops_per_thread": [
+        525675,
+        650665,
+        603668,
+        658269,
+        697611,
+        658273
+      ],
+      "X": 379061.65298080066,
+      "x_per_thread": 63176.942163466774,
+      "p50_us": 1.725999936752487,
+      "p99_us": 3.66800009032886,
+      "h": 2.125144973776938,
+      "wait_sum_s": 46.2286649019984,
+      "wait_max_ms": 498.9756730000181,
+      "w": 0.7697579751644275,
+      "mu": 632360.1666666666,
+      "sigma": 54985.522283648046,
+      "cv": 0.08695285563841078
+    },
+    "read": {
+      "threads": 6,
+      "ops": 0,
+      "ops_per_thread": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "X": 0.0,
+      "x_per_thread": 0.0,
+      "p50_us": null,
+      "p99_us": null,
+      "h": null,
+      "wait_sum_s": 0.0,
+      "wait_max_ms": 0.0,
+      "w": 0.0,
+      "mu": 0.0,
+      "sigma": 0.0,
+      "cv": 0.0
+    },
+    "total": {
+      "ops": 3794161,
+      "X": 379061.65298080066,
+      "phi_w": 1.0,
+      "phi_r": 0.0,
+      "p50_us": 1.725999936752487,
+      "p99_us": 3.66800009032886,
+      "wait_max_ms": 498.9756730000181,
+      "w": 0.3848789875822137,
+      "cv": 1.0075324303501842
+    },
+    "invariants": {
+      "ok": true,
+      "size": 10001,
+      "max_size": 10001,
+      "num_buckets": 1024,
+      "non_empty_buckets": 1024,
+      "max_chain_len": 11,
+      "inserted": 10001,
+      "updated": 4253675,
+      "removed": 0,
+      "remove_misses": 0,
+      "distinct_written_keys": 10001,
+      "key_range": "0..10000"
+    },
+    "per_thread": [
+      {
+        "thread": 1,
+        "role": "write",
+        "ops": 525675
+      },
+      {
+        "thread": 2,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 3,
+        "role": "write",
+        "ops": 650665
+      },
+      {
+        "thread": 4,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 5,
+        "role": "write",
+        "ops": 603668
+      },
+      {
+        "thread": 6,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 7,
+        "role": "write",
+        "ops": 658269
+      },
+      {
+        "thread": 8,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 9,
+        "role": "write",
+        "ops": 697611
+      },
+      {
+        "thread": 10,
+        "role": "read",
+        "ops": 0
+      },
+      {
+        "thread": 11,
+        "role": "write",
+        "ops": 658273
+      },
+      {
+        "thread": 12,
+        "role": "read",
+        "ops": 0
+      }
+    ],
+    "host": {
+      "python": "3.14.2",
+      "implementation": "CPython",
+      "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+      "logical_cores": 2
+    }
+  }
+]
