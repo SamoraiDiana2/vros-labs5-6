@@ -54,7 +54,7 @@
 
 Поля файлу прогону швидкості: `t_step_ms` (медіана 50 кроків), `t_step_mean_ms`,
 `t_step_min_ms`, `t_step_max_ms`, `t_block_s` (тривалість 50 кроків), `throughput`
-(X = 50 · B / t), `t_sync_ms`, `P`, `b`, `B`, `n_th`, `steps_per_epoch`, `n_params`,
+(X = 50 * B / t), `t_sync_ms`, `P`, `b`, `B`, `n_th`, `steps_per_epoch`, `n_params`,
 `host.conditions` і `host.conditions_before` (умови, записані процесом і оркестратором),
 `cmd` — точна команда прогону.
 
