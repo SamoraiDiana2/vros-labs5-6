@@ -25,7 +25,7 @@ import time
 import numpy as np
 import torch
 from torch import nn
-from torch.utils.data import TensorDataset
+from torch.utils.data import DataLoader
 from sklearn.metrics import roc_auc_score
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
