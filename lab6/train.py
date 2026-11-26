@@ -485,7 +485,7 @@ def main(argv=None):
     ap.add_argument("--global-batch", type=int, default=None,
                     help="глобальний батч B; батч процесу b = B / P")
     ap.add_argument("--per-proc-batch", type=int, default=None,
-                    help="батч процесу b; глобальний батч B = P · b (weak scaling)")
+                    help="батч процесу b; глобальний батч B = P * b (weak scaling)")
     ap.add_argument("--lr", type=float, default=ETA0)
     ap.add_argument("--epochs", type=int, default=N_EPOCHS)
     ap.add_argument("--threads", type=int, default=None, help="n_th, типово ⌊C_phys / P_max⌋")

@@ -40,6 +40,6 @@
     "memory_gb": null,
     "conditions_before": {}
   },
-  "wall_s": 5.358059123000203,
+  "wall_s": 3.2658868489997985,
   "cmd": "/home/codespace/.python/current/bin/python -m lab6.train --task stand --out results/lab6/stand.json"
 }
