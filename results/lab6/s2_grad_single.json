@@ -1,0 +1,25 @@
+{
+  "task": "grad-single",
+  "B": 192,
+  "grad_file": "results/lab6/grad_single.pt",
+  "max_abs": 0.14133895933628082,
+  "tensors": 8,
+  "n_params": 207051,
+  "rank": 0,
+  "restart_count": 0,
+  "host": {
+    "python": "3.14.2",
+    "implementation": "CPython",
+    "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+    "sys_platform": "linux",
+    "machine": "x86_64",
+    "torch": "2.15.0+cu132",
+    "logical_cores": 2,
+    "physical_cores": null,
+    "torch_num_threads": 1,
+    "omp_num_threads": "1",
+    "conditions_before": {}
+  },
+  "wall_s": 2.997593121999671,
+  "cmd": "/home/codespace/.python/current/bin/python -m lab6.train --task grad-single --sync none --global-batch 192 --grad-file results/lab6/grad_single.pt --threads 1 --out results/lab6/s2_grad_single.json"
+}

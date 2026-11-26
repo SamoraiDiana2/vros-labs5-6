@@ -1,0 +1,92 @@
+{
+  "task": "equiv",
+  "P": 3,
+  "B": 192,
+  "b": 64,
+  "t_sync_first_ms": 38.811804000943084,
+  "shard_sizes": 64,
+  "max_rel_grad_diff": 4.141583864954316e-06,
+  "per_tensor": [
+    {
+      "tensor": 0,
+      "numel": 144,
+      "max_abs_g": 0.004893985111266375,
+      "max_abs_diff": 1.7462298274040222e-08,
+      "rel": 3.5681143029717253e-06
+    },
+    {
+      "tensor": 1,
+      "numel": 16,
+      "max_abs_g": 0.007252093404531479,
+      "max_abs_diff": 3.003515303134918e-08,
+      "rel": 4.141583864954316e-06
+    },
+    {
+      "tensor": 2,
+      "numel": 4608,
+      "max_abs_g": 0.00855343509465456,
+      "max_abs_diff": 1.6763806343078613e-08,
+      "rel": 1.9598916876747093e-06
+    },
+    {
+      "tensor": 3,
+      "numel": 32,
+      "max_abs_g": 0.019518127664923668,
+      "max_abs_diff": 4.563480615615845e-08,
+      "rel": 2.3380729411955567e-06
+    },
+    {
+      "tensor": 4,
+      "numel": 200704,
+      "max_abs_g": 0.014248713850975037,
+      "max_abs_diff": 5.587935447692871e-09,
+      "rel": 3.9217121672427226e-07
+    },
+    {
+      "tensor": 5,
+      "numel": 128,
+      "max_abs_g": 0.02240700274705887,
+      "max_abs_diff": 2.7939677238464355e-09,
+      "rel": 1.2469172050300973e-07
+    },
+    {
+      "tensor": 6,
+      "numel": 1408,
+      "max_abs_g": 0.03796302527189255,
+      "max_abs_diff": 1.30385160446167e-08,
+      "rel": 3.4345302965805227e-07
+    },
+    {
+      "tensor": 7,
+      "numel": 11,
+      "max_abs_g": 0.14133895933628082,
+      "max_abs_diff": 7.450580596923828e-09,
+      "rel": 5.27142737707374e-08
+    }
+  ],
+  "steps_before_sum": 36,
+  "weight_sums": [
+    79.3697912980697,
+    79.3697912980697,
+    79.3697912980697
+  ],
+  "weight_sum_spread": 0.0,
+  "n_params": 207051,
+  "rank": 0,
+  "restart_count": 0,
+  "host": {
+    "python": "3.14.2",
+    "implementation": "CPython",
+    "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+    "sys_platform": "linux",
+    "machine": "x86_64",
+    "torch": "2.15.0+cu132",
+    "logical_cores": 2,
+    "physical_cores": null,
+    "torch_num_threads": 1,
+    "omp_num_threads": "1",
+    "conditions_before": {}
+  },
+  "wall_s": 15.957448872999521,
+  "cmd": "/home/codespace/.python/current/bin/python -m scripts.lab6_torchrun --standalone --nproc_per_node=3 -m lab6.train --task equiv --sync manual --global-batch 192 --grad-file results/lab6/grad_single.pt --threads 1 --out results/lab6/s2_equiv.json"
+}

@@ -31,6 +31,8 @@
     "python": "3.14.2",
     "implementation": "CPython",
     "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+    "sys_platform": "linux",
+    "machine": "x86_64",
     "torch": "2.15.0+cu132",
     "logical_cores": 2,
     "physical_cores": null,
@@ -40,6 +42,6 @@
     "memory_gb": null,
     "conditions_before": {}
   },
-  "wall_s": 3.2658868489997985,
-  "cmd": "/home/codespace/.python/current/bin/python -m lab6.train --task stand --out results/lab6/stand.json"
+  "wall_s": 3.066235582000445,
+  "cmd": "/home/codespace/.python/current/bin/python -m lab6.train --task stand --threads 1 --out results/lab6/stand.json"
 }
