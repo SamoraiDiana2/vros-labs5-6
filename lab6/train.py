@@ -24,36 +24,26 @@ import time
 
 import numpy as np
 import torch
-from torch import nn
-from torch.utils.data import DataLoader
-from sklearn.metrics import roc_auc_score
-from torch.nn.parallel import DistributedDataParallel
-from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
+from sklearn.metrics import roc_auc_score
+from torch import nn
+from torch.nn.parallel import DistributedDataParallel
+from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 
-from lab6.data import DATASETS, WIDTHS, load_split
+from lab6.data import DATASETS, WIDTHS, ZENODO, load_split
 from lab6.host import host_info, physical_cores, run_conditions, utf8_console
 from lab6.model import Net, n_params_formula
 from lab6.winuv import patch_worker
 
-name, K, C = DATASETS["Д4"] # за варіантом
-c1, c2, h = WIDTHS["Ш1"] # за варіантом
-train = load_split(f"data/{name}.npz", "train", n=7000)
-test = load_split(f"data/{name}.npz", "test")
-torch.manual_seed(0)
-model = Net(C, c1, c2, h, K)
-
-n_params = sum(p.numel() for p in model.parameters())
-assert n_params == n_params_formula(C, c1, c2, h, K)
-
-VARIANT={
+VARIANT = {
     "number": 22,
-    "dataset": "Д4", # OrganCMnist
-    "width": "Ш1", # c1=16, c2=32, h=128
+    "dataset": "Д4",       # OrganCMNIST
+    "width": "Ш1",         # c1=16, c2=32, h=128
     "p_max": 3,
-    "batch": 192, #глобальний батч B
-    "ckpt_interval": 20,  # K_c
-    "fail_step": 50,      # s_f
+    "batch": 192,          # глобальний батч B
+    "ckpt_interval": 20,   # K_c
+    "fail_step": 50,       # s_f
 }
 
 ETA0 = 0.02        # eta0
@@ -113,7 +103,8 @@ def datasets(name, with_test=True):
     if not os.path.exists(path):
         raise SystemExit(
             f"немає {path}; завантажити: curl -L -o {path} "
-            f"https://zenodo.org/records/10519652/files/{name}.npz?download=1")
+            f"{ZENODO}/{name}.npz?download=1"
+        )
     train = load_split(path, "train", n=N_TRAIN)
     test = load_split(path, "test") if with_test else None
     return train, test
@@ -122,15 +113,18 @@ def datasets(name, with_test=True):
 def make_loader(train, b, world, rank, distributed):
     """DataLoader процесу і семплер (None поза групою)."""
     if distributed:
-        sampler = DistributedSampler(train, num_replicas=world, rank=rank,
-                                     shuffle=True, seed=SEED)
-        loader = DataLoader(train, batch_size=b, sampler=sampler, drop_last=True,
-                            num_workers=0)
+        sampler = DistributedSampler(
+            train, num_replicas=world, rank=rank, shuffle=True, seed=SEED
+        )
+        loader = DataLoader(
+            train, batch_size=b, sampler=sampler, drop_last=True, num_workers=0
+        )
         return loader, sampler
     g = torch.Generator()
     g.manual_seed(SEED)
-    loader = DataLoader(train, batch_size=b, shuffle=True, drop_last=True,
-                        num_workers=0, generator=g)
+    loader = DataLoader(
+        train, batch_size=b, shuffle=True, drop_last=True, num_workers=0, generator=g
+    )
     return loader, None
 
 
@@ -165,8 +159,9 @@ def manual_sync(model, world):
     """Ручна синхронізація градієнтів; повертає час від першого all-reduce до останнього."""
     t0 = time.perf_counter()
     for p in model.parameters():
-        dist.all_reduce(p.grad, op=dist.ReduceOp.SUM)
-        p.grad /= world
+        if p.grad is not None:
+            dist.all_reduce(p.grad, op=dist.ReduceOp.SUM)
+            p.grad /= world
     return time.perf_counter() - t0
 
 
@@ -258,7 +253,7 @@ def task_speed(a, train, model, world, rank, b, B):
         "t_step_min_ms": min(times) * 1e3,
         "t_step_max_ms": max(times) * 1e3,
         "t_block_s": t_block,
-        "throughput": MEASURE_STEPS * B / t_block,
+        "throughput": (MEASURE_STEPS * B / t_block) if t_block > 0 else 0.0,
         "t_sync_ms": statistics.median(syncs) * 1e3,
         "loss_last": losses[-1],
     }
@@ -281,6 +276,7 @@ def task_grad_single(a, train, model, B):
     model.zero_grad(set_to_none=False)
     nn.CrossEntropyLoss()(model(xb), yb).backward()
     grads = [p.grad.detach().clone().double() for p in model.parameters()]
+    os.makedirs(os.path.dirname(a.grad_file) or ".", exist_ok=True)
     torch.save(grads, a.grad_file)
     return {
         "task": "grad-single",
@@ -303,18 +299,30 @@ def task_equiv(a, train, model, world, rank, b, B):
     t_sync = manual_sync(model, world)
     gbar = [p.grad.detach().clone().double() for p in model.parameters()]
 
-    out = {"task": "equiv", "P": world, "B": B, "b": b, "t_sync_first_ms": t_sync * 1e3,
-           "shard_sizes": len(idx)}
+    out = {
+        "task": "equiv",
+        "P": world,
+        "B": B,
+        "b": b,
+        "t_sync_first_ms": t_sync * 1e3,
+        "shard_sizes": len(idx),
+    }
     if rank == 0:
-        g = torch.load(a.grad_file)
+        g = torch.load(a.grad_file, weights_only=True)
         rel, per_tensor = 0.0, []
         for i, (gi, bi) in enumerate(zip(g, gbar)):
             scale = float(gi.abs().max())
-            r = float((gi - bi).abs().max()) / scale if scale else 0.0
-            per_tensor.append({"tensor": i, "numel": gi.numel(),
-                               "max_abs_g": scale,
-                               "max_abs_diff": float((gi - bi).abs().max()),
-                               "rel": r})
+            diff = float((gi - bi).abs().max())
+            r = diff / scale if scale else 0.0
+            per_tensor.append(
+                {
+                    "tensor": i,
+                    "numel": gi.numel(),
+                    "max_abs_g": scale,
+                    "max_abs_diff": diff,
+                    "rel": r,
+                }
+            )
             rel = max(rel, r)
         out["max_rel_grad_diff"] = rel
         out["per_tensor"] = per_tensor
@@ -332,7 +340,8 @@ def task_equiv(a, train, model, world, rank, b, B):
             break
     local = torch.tensor(
         [sum(float(p.data.double().sum()) for p in model.parameters())],
-        dtype=torch.float64)
+        dtype=torch.float64,
+    )
     gathered = [torch.zeros(1, dtype=torch.float64) for _ in range(world)]
     dist.all_gather(gathered, local)
     sums = [float(t[0]) for t in gathered]
@@ -356,11 +365,16 @@ class EventLog:
         self.path = path
         self.rank = rank
         self.attempt = attempt
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
 
     def add(self, kind, **fields):
-        rec = {"kind": kind, "rank": self.rank, "attempt": self.attempt,
-               "t": time.time(), **fields}
+        rec = {
+            "kind": kind,
+            "rank": self.rank,
+            "attempt": self.attempt,
+            "t": time.time(),
+            **fields,
+        }
         with open(self.path, "a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
             f.flush()
@@ -370,8 +384,13 @@ class EventLog:
 
 def save_ckpt(model, opt, epoch, step_in_epoch, step, ckpt_dir):
     net = model.module if isinstance(model, DistributedDataParallel) else model
-    state = {"model": net.state_dict(), "opt": opt.state_dict(), "epoch": epoch,
-             "step_in_epoch": step_in_epoch, "step": step}
+    state = {
+        "model": net.state_dict(),
+        "opt": opt.state_dict(),
+        "epoch": epoch,
+        "step_in_epoch": step_in_epoch,
+        "step": step,
+    }
     tmp = os.path.join(ckpt_dir, "ckpt.tmp")
     torch.save(state, tmp)
     os.replace(tmp, os.path.join(ckpt_dir, "ckpt.pt"))
@@ -391,9 +410,20 @@ def task_train(a, train, test, model, world, rank, b, B):
     log = None
     if a.ckpt_dir:
         os.makedirs(a.ckpt_dir, exist_ok=True)
-        log = EventLog(os.path.join(a.ckpt_dir, f"events-rank{rank}.jsonl"), rank, attempt)
-        log.add("start", P=world, b=b, B=B, lr=a.lr, epochs=a.epochs,
-                ckpt_interval=a.ckpt_interval, fail_step=a.fail_step, n_e=n_e)
+        log = EventLog(
+            os.path.join(a.ckpt_dir, f"events-rank{rank}.jsonl"), rank, attempt
+        )
+        log.add(
+            "start",
+            P=world,
+            b=b,
+            B=B,
+            lr=a.lr,
+            epochs=a.epochs,
+            ckpt_interval=a.ckpt_interval,
+            fail_step=a.fail_step,
+            n_e=n_e,
+        )
 
     # відновлення з контрольної точки
     start_epoch, skip, step = 0, 0, 0
@@ -420,12 +450,20 @@ def task_train(a, train, test, model, world, rank, b, B):
             if i < to_skip:
                 continue
             # імітація відмови: процес rank P − 1 завершується на початку кроку s_f
-            if (a.fail_step and rank == world - 1 and step + 1 == a.fail_step
-                    and marker and not os.path.exists(marker)):
+            if (
+                a.fail_step
+                and rank == world - 1
+                and step + 1 == a.fail_step
+                and marker
+                and not os.path.exists(marker)
+            ):
                 with open(marker, "w", encoding="utf-8") as f:
                     f.write(json.dumps({"step": a.fail_step, "t": time.time()}))
-                log.add("fail", step=a.fail_step, epoch=epoch, i=i)
-                sys.stderr.write(f"rank {rank}: os._exit(1) на початку кроку {a.fail_step}\n")
+                if log:
+                    log.add("fail", step=a.fail_step, epoch=epoch, i=i)
+                sys.stderr.write(
+                    f"rank {rank}: os._exit(1) на початку кроку {a.fail_step}\n"
+                )
                 sys.stderr.flush()
                 os._exit(1)
             loss_local, _ = batch_step(model, opt, loss_fn, xb, yb, a.sync, world)
@@ -438,11 +476,23 @@ def task_train(a, train, test, model, world, rank, b, B):
                 loss_global = float(t[0]) / world
             else:
                 loss_global = loss_local
-            history.append({"step": step, "epoch": epoch, "loss": loss_global,
-                            "loss_local": loss_local, "attempt": attempt})
+            history.append(
+                {
+                    "step": step,
+                    "epoch": epoch,
+                    "loss": loss_global,
+                    "loss_local": loss_local,
+                    "attempt": attempt,
+                }
+            )
             if log:
-                log.add("step", step=step, epoch=epoch, loss=loss_global,
-                        loss_local=loss_local)
+                log.add(
+                    "step",
+                    step=step,
+                    epoch=epoch,
+                    loss=loss_global,
+                    loss_local=loss_local,
+                )
             if a.ckpt_interval and step % a.ckpt_interval == 0:
                 if rank == 0:
                     save_ckpt(model, opt, epoch, i + 1, step, a.ckpt_dir)
@@ -453,13 +503,24 @@ def task_train(a, train, test, model, world, rank, b, B):
         skip = 0
 
     out = {
-        "task": "train", "tag": a.tag, "sync": a.sync, "P": world, "b": b, "B": B,
-        "lr": a.lr, "epochs": a.epochs, "n_th": torch.get_num_threads(),
-        "steps_per_epoch": n_e, "steps_total": step, "attempt": attempt,
-        "ckpt_interval": a.ckpt_interval, "fail_step": a.fail_step,
+        "task": "train",
+        "tag": a.tag,
+        "sync": a.sync,
+        "P": world,
+        "b": b,
+        "B": B,
+        "lr": a.lr,
+        "epochs": a.epochs,
+        "n_th": torch.get_num_threads(),
+        "steps_per_epoch": n_e,
+        "steps_total": step,
+        "attempt": attempt,
+        "ckpt_interval": a.ckpt_interval,
+        "fail_step": a.fail_step,
         "loss_history": history,
         "loss_max_last_epoch": max(
-            (h["loss"] for h in history if h["epoch"] == a.epochs - 1), default=None),
+            (h["loss"] for h in history if h["epoch"] == a.epochs - 1), default=None
+        ),
     }
     if rank == 0:
         acc, auc = evaluate(model, test)
@@ -477,18 +538,34 @@ def main(argv=None):
     c1, c2, h = WIDTHS[VARIANT["width"]]
 
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--task", default="speed",
-                    choices=["stand", "speed", "grad-single", "equiv", "train"])
-    ap.add_argument("--sync", default="ddp",
-                    choices=["none", "manual", "ddp", "ddp-nosync"],
-                    help="none — один процес без torch.distributed")
-    ap.add_argument("--global-batch", type=int, default=None,
-                    help="глобальний батч B; батч процесу b = B / P")
-    ap.add_argument("--per-proc-batch", type=int, default=None,
-                    help="батч процесу b; глобальний батч B = P * b (weak scaling)")
+    ap.add_argument(
+        "--task",
+        default="speed",
+        choices=["stand", "speed", "grad-single", "equiv", "train"],
+    )
+    ap.add_argument(
+        "--sync",
+        default="ddp",
+        choices=["none", "manual", "ddp", "ddp-nosync"],
+        help="none — один процес без torch.distributed",
+    )
+    ap.add_argument(
+        "--global-batch",
+        type=int,
+        default=None,
+        help="глобальний батч B; батч процесу b = B / P",
+    )
+    ap.add_argument(
+        "--per-proc-batch",
+        type=int,
+        default=None,
+        help="батч процесу b; глобальний батч B = P * b (weak scaling)",
+    )
     ap.add_argument("--lr", type=float, default=ETA0)
     ap.add_argument("--epochs", type=int, default=N_EPOCHS)
-    ap.add_argument("--threads", type=int, default=None, help="n_th, типово ⌊C_phys / P_max⌋")
+    ap.add_argument(
+        "--threads", type=int, default=None, help="n_th, типово ⌊C_phys / P_max⌋"
+    )
     ap.add_argument("--ckpt-dir", default=None)
     ap.add_argument("--ckpt-interval", type=int, default=0, help="K_c, 0 — без точок")
     ap.add_argument("--fail-step", type=int, default=0, help="s_f, 0 — без відмови")
@@ -520,14 +597,27 @@ def main(argv=None):
         model, n_params = build_model(K, C, VARIANT["width"])
         train, test = datasets(name)
         out = {
-            "task": "stand", "variant": VARIANT, "dataset": name, "K": K, "C": C,
-            "c1": c1, "c2": c2, "h": h, "n_params": n_params,
+            "task": "stand",
+            "variant": VARIANT,
+            "dataset": name,
+            "K": K,
+            "C": C,
+            "c1": c1,
+            "c2": c2,
+            "h": h,
+            "n_params": n_params,
             "n_params_formula": n_params_formula(C, c1, c2, h, K),
-            "M_bytes": 4 * n_params, "M_mib": 4 * n_params / 1024 ** 2,
+            "M_bytes": 4 * n_params,
+            "M_mib": 4 * n_params / 1024**2,
             "param_tensors": sum(1 for _ in model.parameters()),
-            "N_train": len(train), "N_test": len(test), "B": VARIANT["batch"],
-            "eta0": ETA0, "momentum": MOMENTUM, "n_epochs": N_EPOCHS,
-            "n_th": n_th, "host": host_info(run_conditions(), full=True),
+            "N_train": len(train),
+            "N_test": len(test),
+            "B": VARIANT["batch"],
+            "eta0": ETA0,
+            "momentum": MOMENTUM,
+            "n_epochs": N_EPOCHS,
+            "n_th": n_th,
+            "host": host_info(run_conditions(), full=True),
         }
         emit(out, a.out, rank)
         return
@@ -567,7 +657,11 @@ def emit(out, path, rank):
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             f.write(text + "\n")
-    short = {k: v for k, v in out.items() if k not in ("loss_history", "per_tensor", "host")}
+    short = {
+        k: v
+        for k, v in out.items()
+        if k not in ("loss_history", "per_tensor", "host")
+    }
     sys.stdout.write(json.dumps(short, ensure_ascii=False, indent=2) + "\n")
 
 

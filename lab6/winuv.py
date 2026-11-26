@@ -1,19 +1,14 @@
-"""Обхід збірки PyTorch для Windows без libuv.
+"""Обхід збірки PyTorch для Windows (win64) без підтримки libuv.
 
-`torch 2.14.0+cpu` для Windows зібрано без libuv, а частина коду `torch.distributed`
-створює `TCPStore` із типовим `use_libuv=True` і падає:
+Частина коду `torch.distributed` на Windows створює `TCPStore` із типовим
+`use_libuv=True` і завершується з `DistStoreError: use_libuv was requested but
+PyTorch was built without libuv support`.
 
-    DistStoreError: use_libuv was requested but PyTorch was built without libuv support
-
-Сам torch на win32 для `env://` типово бере `use_libuv=0` (`rendezvous.py`), тож підміна
-нижче лише поширює цей самий типовий вибір на решту місць: store рандеву агента elastic
-(бекенди `static`, `c10d`, `dynamic`) і store, який процес-воркер створює під агентом.
-На інших ОС підміна не робиться.
-
-Викликається двічі: `patch_worker()` у процесі навчання перед `init_process_group` і
-`patch_agent()` в обгортці torchrun ([scripts/lab6_torchrun.py](../scripts/lab6_torchrun.py)).
+Модуль підміняє `TCPStore` обгорткою з `use_libuv=False` у всіх точках входу
+`torch.distributed` та `torch.distributed.elastic` на платформі `win32` (win64).
 """
 
+import importlib
 import os
 import sys
 
@@ -29,29 +24,37 @@ def active():
     return sys.platform == "win32"
 
 
-def patch_worker():
-    """Store, який процес навчання створює в init_process_group через env://."""
+def _apply_tcpstore_patch():
     if not active():
         return False
-    import importlib
 
-    # у torch.distributed назву rendezvous займає функція, тому модуль беремо importlib
+    os.environ["USE_LIBUV"] = "0"
+
+    import torch.distributed as dist
+
+    dist.TCPStore = _tcp_store
+
     rdzv = importlib.import_module("torch.distributed.rendezvous")
     rdzv.TCPStore = _tcp_store
-    os.environ.setdefault("USE_LIBUV", "0")
+
+    for mod_name in (
+        "torch.distributed.elastic.rendezvous.c10d_rendezvous_backend",
+        "torch.distributed.elastic.rendezvous.static_tcp_rendezvous",
+    ):
+        try:
+            mod = importlib.import_module(mod_name)
+            mod.TCPStore = _tcp_store
+        except ImportError:
+            pass
+
     return True
+
+
+def patch_worker():
+    """Патч для процесу-воркера навчання перед dist.init_process_group()."""
+    return _apply_tcpstore_patch()
 
 
 def patch_agent():
-    """Store рандеву агента elastic (torchrun)."""
-    if not active():
-        return False
-    import torch.distributed as dist
-    import torch.distributed.elastic.rendezvous.c10d_rendezvous_backend as c10d_rdzv
-    import torch.distributed.elastic.rendezvous.static_tcp_rendezvous as static_rdzv
-
-    static_rdzv.TCPStore = _tcp_store
-    c10d_rdzv.TCPStore = _tcp_store
-    dist.TCPStore = _tcp_store  # dynamic_rendezvous звертається до dist.TCPStore
-    os.environ.setdefault("USE_LIBUV", "0")
-    return True
+    """Патч для обгортки агента elastic (torchrun)."""
+    return _apply_tcpstore_patch()
